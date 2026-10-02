@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="570" viewBox="0 0 1080 570" role="img" aria-labelledby="title desc">
+<title id="title">LoRA smoke run: verified end-to-end inference</title><desc id="desc">2,000-record prefix | 1 CPU epoch | 46 test reviews Test macro MSE: 0.012316. Small-sample workflow check; not comparable to the ridge chart.</desc>
+<rect width="1080" height="570" fill="#ffffff"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#17283d} .muted{fill:#53657a}</style>
+<text x="50" y="48" font-size="28" font-weight="bold">LoRA smoke run: verified end-to-end inference</text>
+<text x="50" y="78" font-size="17" class="muted">2,000-record prefix | 1 CPU epoch | 46 test reviews</text>
+<rect x="50" y="100" width="16" height="16" rx="3" fill="#6856b8"/>
+<text x="74" y="114" font-size="16" >DistilBERT + LoRA</text>
+<line x1="90" x2="990" y1="430.0" y2="430.0" stroke="#dde5ef"/>
+<text x="76" y="435.0" font-size="14" text-anchor="end">0.00</text>
+<line x1="90" x2="990" y1="333.3333333333333" y2="333.3333333333333" stroke="#dde5ef"/>
+<text x="76" y="338.3333333333333" font-size="14" text-anchor="end">0.01</text>
+<line x1="90" x2="990" y1="236.66666666666663" y2="236.66666666666663" stroke="#dde5ef"/>
+<text x="76" y="241.66666666666663" font-size="14" text-anchor="end">0.02</text>
+<line x1="90" x2="990" y1="140.0" y2="140.0" stroke="#dde5ef"/>
+<text x="76" y="145.0" font-size="14" text-anchor="end">0.03</text>
+<text x="35" y="285.0" font-size="14" transform="rotate(-90 35 285.0)">MSE</text>
+<rect x="156.0" y="256.7426191119025" width="48" height="173.25738088809746" fill="#6856b8" rx="3"/>
+<text x="180.0" y="246.7426191119025" font-size="14" text-anchor="middle">0.0179</text>
+<text x="180.0" y="460" font-size="16" text-anchor="middle">Appearance</text>
+<rect x="336.0" y="318.8046999547163" width="48" height="111.1953000452837" fill="#6856b8" rx="3"/>
+<text x="360.0" y="308.8046999547163" font-size="14" text-anchor="middle">0.0115</text>
+<text x="360.0" y="460" font-size="16" text-anchor="middle">Aroma</text>
+<rect x="516.0" y="314.67556302577697" width="48" height="115.32443697422303" fill="#6856b8" rx="3"/>
+<text x="540.0" y="304.67556302577697" font-size="14" text-anchor="middle">0.0119</text>
+<text x="540.0" y="460" font-size="16" text-anchor="middle">Palate</text>
+<rect x="696.0" y="344.49135164429345" width="48" height="85.50864835570653" fill="#6856b8" rx="3"/>
+<text x="720.0" y="334.49135164429345" font-size="14" text-anchor="middle">0.0088</text>
+<text x="720.0" y="460" font-size="16" text-anchor="middle">Taste</text>
+<rect x="876.0" y="320.0319513507163" width="48" height="109.96804864928365" fill="#6856b8" rx="3"/>
+<text x="900.0" y="310.0319513507163" font-size="14" text-anchor="middle">0.0114</text>
+<text x="900.0" y="460" font-size="16" text-anchor="middle">Overall</text>
+<text x="50" y="500" font-size="16" class="muted">Test macro MSE: 0.012316. Small-sample workflow check; not comparable to the ridge chart.</text>
+<text x="50" y="533" font-size="14" class="muted">Source: committed aggregate metrics. Lower MSE is better; targets are normalized to [0, 1].</text>
+</svg>

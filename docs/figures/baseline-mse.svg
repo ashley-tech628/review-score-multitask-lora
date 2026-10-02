@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="570" viewBox="0 0 1080 570" role="img" aria-labelledby="title desc">
+<title id="title">Unseen-product evaluation: text features improve the baseline</title><desc id="desc">20,000-record prefix | 3,559 test reviews | 76 held-out products Macro MSE: 0.018400 → 0.016149 (12.2% reduction on this sample).</desc>
+<rect width="1080" height="570" fill="#ffffff"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#17283d} .muted{fill:#53657a}</style>
+<text x="50" y="48" font-size="28" font-weight="bold">Unseen-product evaluation: text features improve the baseline</text>
+<text x="50" y="78" font-size="17" class="muted">20,000-record prefix | 3,559 test reviews | 76 held-out products</text>
+<rect x="50" y="100" width="16" height="16" rx="3" fill="#a6b5ca"/>
+<text x="74" y="114" font-size="16" >Training-set mean</text>
+<rect x="380" y="100" width="16" height="16" rx="3" fill="#147d92"/>
+<text x="404" y="114" font-size="16" >Hashed BoW + Ridge</text>
+<line x1="90" x2="990" y1="430.0" y2="430.0" stroke="#dde5ef"/>
+<text x="76" y="435.0" font-size="14" text-anchor="end">0.00</text>
+<line x1="90" x2="990" y1="333.3333333333333" y2="333.3333333333333" stroke="#dde5ef"/>
+<text x="76" y="338.3333333333333" font-size="14" text-anchor="end">0.01</text>
+<line x1="90" x2="990" y1="236.66666666666663" y2="236.66666666666663" stroke="#dde5ef"/>
+<text x="76" y="241.66666666666663" font-size="14" text-anchor="end">0.02</text>
+<line x1="90" x2="990" y1="140.0" y2="140.0" stroke="#dde5ef"/>
+<text x="76" y="145.0" font-size="14" text-anchor="end">0.03</text>
+<text x="35" y="285.0" font-size="14" transform="rotate(-90 35 285.0)">MSE</text>
+<rect x="127.0" y="223.2473415644873" width="48" height="206.7526584355127" fill="#a6b5ca" rx="3"/>
+<text x="151.0" y="213.2473415644873" font-size="14" text-anchor="middle">0.0214</text>
+<rect x="185.0" y="244.83279044436796" width="48" height="185.16720955563204" fill="#147d92" rx="3"/>
+<text x="209.0" y="234.83279044436796" font-size="14" text-anchor="middle">0.0192</text>
+<text x="180.0" y="460" font-size="16" text-anchor="middle">Appearance</text>
+<rect x="307.0" y="282.3312464110305" width="48" height="147.6687535889695" fill="#a6b5ca" rx="3"/>
+<text x="331.0" y="272.3312464110305" font-size="14" text-anchor="middle">0.0153</text>
+<rect x="365.0" y="295.891372794723" width="48" height="134.108627205277" fill="#147d92" rx="3"/>
+<text x="389.0" y="285.891372794723" font-size="14" text-anchor="middle">0.0139</text>
+<text x="360.0" y="460" font-size="16" text-anchor="middle">Aroma</text>
+<rect x="487.0" y="204.89548731153812" width="48" height="225.10451268846188" fill="#a6b5ca" rx="3"/>
+<text x="511.0" y="194.89548731153812" font-size="14" text-anchor="middle">0.0233</text>
+<rect x="545.0" y="231.23090670693404" width="48" height="198.76909329306596" fill="#147d92" rx="3"/>
+<text x="569.0" y="221.23090670693404" font-size="14" text-anchor="middle">0.0206</text>
+<text x="540.0" y="460" font-size="16" text-anchor="middle">Palate</text>
+<rect x="667.0" y="278.9565552077234" width="48" height="151.0434447922766" fill="#a6b5ca" rx="3"/>
+<text x="691.0" y="268.9565552077234" font-size="14" text-anchor="middle">0.0156</text>
+<rect x="725.0" y="299.2509244117052" width="48" height="130.74907558829474" fill="#147d92" rx="3"/>
+<text x="749.0" y="289.2509244117052" font-size="14" text-anchor="middle">0.0135</text>
+<text x="720.0" y="460" font-size="16" text-anchor="middle">Taste</text>
+<rect x="847.0" y="271.24458082798037" width="48" height="158.7554191720196" fill="#a6b5ca" rx="3"/>
+<text x="871.0" y="261.24458082798037" font-size="14" text-anchor="middle">0.0164</text>
+<rect x="905.0" y="298.2430859048877" width="48" height="131.7569140951123" fill="#147d92" rx="3"/>
+<text x="929.0" y="288.2430859048877" font-size="14" text-anchor="middle">0.0136</text>
+<text x="900.0" y="460" font-size="16" text-anchor="middle">Overall</text>
+<text x="50" y="500" font-size="16" class="muted">Macro MSE: 0.018400 → 0.016149 (12.2% reduction on this sample).</text>
+<text x="50" y="533" font-size="14" class="muted">Source: committed aggregate metrics. Lower MSE is better; targets are normalized to [0, 1].</text>
+</svg>

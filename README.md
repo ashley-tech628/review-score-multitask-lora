@@ -1,92 +1,177 @@
-# Multi-Aspect Review Scoring: LoRA and Reliable Evaluation
+# Multi-Aspect Review Scoring with DistilBERT + LoRA
 
-Predict appearance, aroma, palate, taste and overall ratings from review text.
+**One review → five continuous ratings, with product-held-out evaluation and verified model recovery.**
 
-**Team project led by Ashley Liu (Xinying Liu).** Ashley reports completing most of the implementation. Exact module-by-module teammate attribution remains to be documented. The original DistilBERT + LoRA experiment is preserved alongside an AI-assisted reliability extension with runnable baselines, product-held-out evaluation and checkpoint auditing.
+This project predicts **appearance, aroma, palate, taste and overall** scores from beer-review text. It combines a shared DistilBERT encoder with LoRA adapters and a regression head, then makes the experiment inspectable through explicit data contracts, baselines, saved metrics and serving-bundle checks.
 
-## Try it locally
+**Team lead: Ashley Liu (Xinying Liu).** Ashley led the original team project and completed most of the implementation. See [attribution](docs/ATTRIBUTION.md) for the distinction between original work and the subsequent AI-assisted engineering extension.
 
-Python 3.10+ and NumPy are sufficient. No API key, model download or private dataset is needed for the synthetic demo.
+| Evidence | Recorded result |
+|---|---|
+| Product-held-out baseline experiment | **12.2% lower macro MSE** than the training-mean predictor on 3,559 test reviews |
+| New LoRA training run | One CPU epoch; training, export, reload and prediction completed |
+| Verification | **13 tests passed**, including all three neural tests |
+| Reusable artifacts | Aggregate metrics, synthetic demo, model loaders and reproducible chart script |
+
+[Results](#experimental-results) · [Architecture](#architecture) · [Quick start](#quick-start) · [Technical report](docs/REPORT.md)
+
+## Problem and engineering decisions
+
+A single sentiment label loses information: the same review can praise aroma while criticizing taste. A shared encoder predicts all five aspects, using normalized targets in **[0, 1]** and a separate loss mask for each observed rating.
+
+The reliability work addresses three concrete failure modes in the source experiment:
+
+| Failure mode | Implemented change |
+|---|---|
+| Missing ratings were converted to zero | Invalid labels remain absent and are excluded from loss and metrics per target |
+| Record-level partitions could share products | Stable product hashes assign each product to exactly one train/validation/test partition |
+| The saved adapter omitted the regression head | The new serving bundle explicitly saves adapter, head, tokenizer and base-model reference; reload predictions are checked |
+
+Normalized exact review duplicates are removed before partitioning. Product identifiers are used for splitting, not as text-model input. Labels such as `13/20` become `0.65`; plain numbers must already be normalized. MSE and MAE are reported per target, with observed-label counts.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    R[Review text] --> T[Tokenizer: max 128 tokens]
+    T --> E[DistilBERT encoder]
+    L[LoRA: rank 16, query/value projections] --> E
+    E --> H[Trainable MLP + sigmoid]
+    H --> S[Five normalized scores]
+    Y[Observed labels] --> M[Per-task masked MSE]
+    S --> M
+```
+
+LoRA adapts the attention query/value projections with rank 16, scaling 32 and dropout 0.1. The regression head remains outside the PEFT-wrapped encoder so it stays trainable. Its output is a rating estimate, not a confidence probability.
+
+The baseline uses 128 deterministic signed bag-of-words features, per-review normalization and one ridge regressor per aspect. The intercept is unpenalized; regularization is chosen using validation macro MSE.
+
+## Experimental results
+
+The two new experiments below use **different source prefixes and test partitions**. Each answers a different question; their MSE values do not establish a LoRA-versus-ridge ranking.
+
+### 1. Does review text improve prediction on unseen products?
+
+**Protocol:** first 20,000 source records; seed 42; product-based hash partitioning; exact-review deduplication; alpha selected from `0.1`, `1`, `10` using validation only. Selected alpha: **10**.
+
+| Partition | Reviews | Products |
+|---|---:|---:|
+| Train | 15,054 | 630 |
+| Validation | 1,310 | 72 |
+| Test | 3,559 | 76 |
+
+Cleaning excluded 47 invalid rows and 30 duplicate reviews. All five labels were observed in these test rows.
+
+![Per-aspect test MSE: train-mean baseline versus hashed bag-of-words ridge](docs/figures/baseline-mse.svg)
+
+| Aspect | Mean baseline MSE | Ridge MSE | Ridge MAE |
+|---|---:|---:|---:|
+| Appearance | 0.02139 | **0.01916** | 0.10903 |
+| Aroma | 0.01528 | **0.01387** | 0.08968 |
+| Palate | 0.02329 | **0.02056** | 0.11518 |
+| Taste | 0.01563 | **0.01353** | 0.08853 |
+| Overall | 0.01642 | **0.01363** | 0.08919 |
+| **Macro MSE** | **0.018400** | **0.016149** | — |
+
+Ridge reduced macro MSE by **12.2% relative to the training-mean baseline** on this sample. A paired product-cluster bootstrap with 300 resamples gives an exploratory 95% interval of **[−0.003865, −0.001470]** for the MSE difference, ridge minus mean. Negative values favor ridge.
+
+The interval accounts for clustering within test products, conditional on the fitted models. It does not include training uncertainty or remove source-order sampling bias. [Full metrics, validation trials, input digest and environment](results/product-holdout/metrics.json).
+
+### 2. Can the new LoRA model train, export and serve correctly?
+
+**Protocol:** first 2,000 source records; seed 42; product-based split; one CPU training epoch; batch size 8. Removing one duplicate left **1,693 training / 260 validation / 46 test reviews**.
+
+![Per-aspect test MSE for the one-epoch LoRA smoke run](docs/figures/lora-smoke-mse.svg)
+
+| Aspect | Test MSE | Test MAE |
+|---|---:|---:|
+| Appearance | 0.01792 | 0.12055 |
+| Aroma | 0.01150 | 0.08555 |
+| Palate | 0.01193 | 0.07816 |
+| Taste | 0.00885 | 0.07981 |
+| Overall | 0.01138 | 0.08587 |
+
+**Validation macro MSE: 0.026721. Test macro MSE: 0.012316.** Validation and test contain different products; the lower test value is not evidence of improvement during training. A single epoch also provides no basis for a convergence curve.
+
+The exported bundle reloaded with matching predictions, and the prediction CLI returned all five scores. The **46-row test set is a workflow check**, not a strong generalization benchmark. [Saved metrics](results/lora-smoke/metrics.json) · [Recorded dependency versions](results/lora-smoke/environment.json).
+
+Example output from that trained bundle:
+
+```json
+{
+  "appearance": 0.67638,
+  "aroma": 0.63378,
+  "palate": 0.59472,
+  "taste": 0.61721,
+  "overall": 0.63991
+}
+```
+
+Input: `Floral aroma with a smooth texture and balanced finish`.
+
+### Historical experiment provenance
+
+The original TF-IDF/LoRA result text is preserved as [historical evidence](results/historical/reported_mse.txt). It lacks a complete checkpoint/split association and is excluded from the new comparison plots.
+
+The original step-12,000 checkpoint records approximately **0.1824 epochs** and contains 24 adapter tensors, with **no regression-head tensors**. The new serving-bundle implementation addresses this gap; it does not recover the old model's exact predictions. [Checkpoint audit](results/historical/checkpoint_audit.json).
+
+## Quick start
+
+### Run a self-contained demo
+
+Python 3.10+ and NumPy are sufficient:
 
 ```bash
 python -m pip install -r requirements.txt
 python -m reviewscore predict --model examples/synthetic-baseline.json --text "Bright floral aroma with a smooth finish"
 python -m reviewscore benchmark --data examples/synthetic.jsonl --out runs/demo --limit 200
-python -m unittest discover -s tests -v
 ```
 
-**The bundled model is a ridge baseline trained on artificial, templated examples. It demonstrates the workflow, not real-world predictive performance.** Scores are normalized estimates, not confidence probabilities.
+The bundled demo model is **ridge trained on artificial templated examples**. It demonstrates input, output and serialization; its accuracy is not real-world evidence. Trained LoRA weights remain in ignored local `runs/` directories and are not distributed here.
 
-## What makes this project useful
-
-- **Partial labels:** invalid or missing ratings are excluded independently for each task rather than converted to genuine zero scores.
-- **Unseen-product evaluation:** deterministic 80/10/10 hash partitions keep each product in one partition; normalized exact review duplicates are removed before splitting.
-- **Reproducible baseline:** stable signed bag-of-words hashing, ridge regression and train-mean comparison; regularization selected on validation only.
-- **Uncertainty:** a paired product-cluster bootstrap measures uncertainty in the test MSE difference, conditional on the fitted models.
-- **Recoverable serving artifacts:** the baseline uses JSON and verifies prediction equivalence after reload. The optional neural extension explicitly saves the regression head alongside the LoRA adapter and tokenizer.
-- **Checkpoint forensics:** safetensors header inspection identifies incomplete artifacts without loading pickle files.
-
-## Newly executed experiment
-
-A local prefix of 20,000 source records was cleaned and deduplicated. It yielded 15,054 training, 1,310 validation and 3,559 test reviews. The test reviews represent 76 products absent from training and validation. All five target labels were present in these test rows.
-
-| Model | Test macro MSE |
-|---|---:|
-| Training-set mean for each target | 0.018400 |
-| Hashed bag-of-words ridge, 128 features | **0.016149** |
-
-The absolute difference is −0.002250; the exploratory 95% product-cluster bootstrap interval is [−0.003865, −0.001470] using 300 resamples. This is about 12.2% lower MSE than the train-mean baseline **on this prefix sample only**. The sample is not representative of the full corpus, the interval does not include training uncertainty, and this is not a new LoRA result.
-
-[Full metrics and environment](results/product-holdout/metrics.json) · [Technical report](docs/REPORT.md)
-
-## Historical LoRA evidence and limitations
-
-The original implementation adapts DistilBERT attention query/value projections with rank 16 LoRA and predicts five ratings with an MLP. Historical result text reports per-target MSE values, but those numbers are not tied to a complete reproducible checkpoint and split manifest. They must not be compared directly with the new product-held-out experiment.
-
-The checkpoint at step 12,000 records **0.1824 epochs**, has 24 adapter tensors, and contains **no regression-head tensors**. Its configuration has `modules_to_save: null`. The original wrapper also does not explicitly preserve head trainability when applying PEFT; behavior must be checked in the original runtime. The old adapter alone cannot recover the original scorer.
-
-[Checkpoint audit](results/historical/checkpoint_audit.json) · [Historical result text](results/historical/reported_mse.txt)
-
-## Run against your local data
-
-Input is one JSON object or Python-literal dictionary per line, with `review/text`, `beer/beerId`, and optional `review/{aspect}` labels. Fractions such as `13/20` are normalized; plain numeric inputs must already be in [0,1]. Large JSON arrays are deliberately unsupported. The reader uses `ast.literal_eval`, never `eval`.
+### Reproduce an evaluation on local data
 
 ```bash
 python -m reviewscore benchmark --data /path/to/ratebeer.json --limit 20000 --split product --out runs/product-holdout
 ```
 
-The original data, user names, review texts and individual predictions are not bundled. Acquire data independently under its applicable terms. `--split text` is available as a review-level comparison, but does not hold products out. The benchmark exports aggregate metrics and a local model; output directories must be new or empty.
+Input contains one JSON object or Python-literal dictionary per line, with `review/text`, `beer/beerId` and optional `review/{aspect}` fields. The reader uses `ast.literal_eval`, never `eval`. Large JSON arrays are unsupported; convert them to JSONL first. Obtain the source data independently under its applicable terms. No original reviews, usernames or product identifiers are bundled.
 
-## Optional neural extension
-
-The new model keeps its trainable regression head outside the PEFT-wrapped encoder, applies an observed-label loss and exports both head and adapter. Validation chooses an epoch; test is evaluated after selection. A reload check compares predictions before reporting success.
+### Train and use a LoRA serving bundle
 
 ```bash
 python -m pip install -r requirements-neural.txt
-python -m reviewscore.train_neural --data /path/to/ratebeer.json --base distilbert-base-uncased --out runs/lora --limit 20000 --epochs 1
-python -m reviewscore.predict_neural --bundle runs/lora/bundle --text "Floral aroma and a balanced finish"
+python -m reviewscore.train_neural --data /path/to/ratebeer.json --base distilbert-base-uncased --out runs/lora --limit 2000 --epochs 1 --batch-size 8 --device cpu
+python -m reviewscore.predict_neural --bundle runs/lora/bundle --text "Floral aroma with a smooth texture and balanced finish"
 ```
 
-A Hub model ID may download model files. Use a local base directory plus `--local-only` for offline execution. CUDA/MPS is opt-in via `--device`; CPU is the default. Dependency ranges are not an exact historical lockfile.
+Use a local base directory and `--local-only` for offline training. A Hub model ID may download the pretrained base. CPU is the default; CUDA/MPS is opt-in. Output directories must be empty so results from different runs cannot mix. On Windows, [`validate-lora.ps1`](validate-lora.ps1) automates dependency setup, tests and a smoke run; its dataset default reflects the original local setup.
 
-## Verified LoRA smoke run (2026-10-02)
+### Check and regenerate results
 
-All **13 tests passed**, including masked loss, head trainability and offline bundle roundtrip. A new CPU LoRA run trained for one epoch on the first 2,000 source records: 1,693 training, 260 validation and 46 test reviews after removing one duplicate. Validation macro MSE was **0.026721** and test macro MSE **0.012316**. The exported serving bundle reloaded with matching predictions, and the inference CLI produced five scores.
-
-This small run verifies the end-to-end workflow. Its 46-row test set is too small for a strong generalization claim, and it is not directly comparable with the separate 20,000-record ridge experiment. Original historical weights remain incomplete. The newly trained bundle stays under ignored `runs/`; only aggregate metrics are committed. See [smoke metrics](results/lora-smoke/metrics.json).
-
-The old scripts under `legacy/` are preserved evidence; supported entry points are in `reviewscore/`.
-
-
-## Repository map
-
-```text
-reviewscore/       Data contract, baselines, metrics, CLI, optional neural pipeline
-examples/          Synthetic demo data and synthetic baseline model
-results/           Aggregate new results and historical evidence
-legacy/            Original model and baseline source
-tests/            Data, leakage, serialization and optional neural checks
-docs/              Report, validation, authorship and source hashes
+```bash
+python -m unittest discover -s tests -v
+python scripts/render_results.py
 ```
 
-[Validation](docs/VALIDATION.md) · [Attribution](docs/ATTRIBUTION.md) · [Chinese handoff](docs/HANDOFF_ZH.md)
+All **13 tests passed** in the configured environment, covering parsing, missing-label handling, partition overlap, metric validity, bootstrap behavior, baseline serialization, neural gradients, head trainability and offline bundle recovery. GitHub Actions is configured; its hosted status should be checked separately. [Validation record](docs/VALIDATION.md).
+
+## Scope and next experiment
+
+Current results use ordered prefixes of the source corpus. Product grouping prevents product overlap but does not remove reviewer overlap, near duplicates or every source of distribution leakage. Hash partitioning gives approximate proportions rather than balanced row counts.
+
+The next model-quality experiment is to evaluate LoRA and ridge on **the same larger, fixed partitions**, with validation-only model selection and a paired product-cluster comparison. Full-corpus sampling, reviewer-held-out stress tests, rank/sequence-length ablations and serving latency remain future work.
+
+## Repository guide
+
+| Path | Contents |
+|---|---|
+| [`reviewscore/`](reviewscore/) | Data contract, baseline CLI, optional neural training/inference and checkpoint audit |
+| [`results/`](results/) | Aggregate results and historical evidence |
+| [`examples/`](examples/) | Synthetic demo input and baseline artifact |
+| [`tests/`](tests/) | Pipeline and neural verification |
+| [`legacy/`](legacy/) | Original model and baseline source |
+| [`docs/REPORT.md`](docs/REPORT.md) | Technical report and experimental limitations |
+| [`docs/ATTRIBUTION.md`](docs/ATTRIBUTION.md) | Team authorship and extension scope |
+
+No blanket project license has been assigned. Third-party data and libraries retain their applicable terms.
