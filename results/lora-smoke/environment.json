@@ -1,0 +1,8 @@
+{
+  "torch": "2.14.1+cpu",
+  "transformers": "4.57.6",
+  "peft": "0.18.1",
+  "numpy": "2.5.3",
+  "safetensors": "0.8.0",
+  "evidence": "User-provided successful command output; metrics copied from local run"
+}

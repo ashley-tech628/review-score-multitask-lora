@@ -1,0 +1,32 @@
+[
+  {
+    "source_name": "beer_review_bert.py",
+    "packaged_path": "legacy/beer_review_bert.py",
+    "sha256": "2fad3345927ca67204ad7c55f98fbe87172e9a41924e078ec51d5d294c9c2517"
+  },
+  {
+    "source_name": "baseline_code(bag of words+liner regression).py",
+    "packaged_path": "legacy/tfidf_ridge.py",
+    "sha256": "df64d238894aebd31e4885de1de7c6115992ec339209d049e3b93ed2fc44a411"
+  },
+  {
+    "source_name": "baseline&bert_mse.txt",
+    "packaged_path": "results/historical/reported_mse.txt",
+    "sha256": "d65e41ad71536c164ce7f203e158f3bef355f332ea13b7b4428202e7212a84bb"
+  },
+  {
+    "source_name": "checkpoint-12000/adapter_model.safetensors",
+    "sha256": "dcf2788b060be7c61eacedae869d75691e6ba3b747b584c95e55ce1378b7bebf",
+    "bundled": false
+  },
+  {
+    "source_name": "checkpoint-12000/adapter_config.json",
+    "sha256": "45aa48f013c9d7a6a64264f6bbc73b9c1d44152a4f4ef7837747c9acec073f29",
+    "bundled": false
+  },
+  {
+    "source_name": "checkpoint-12000/trainer_state.json",
+    "sha256": "1fa9597fe18cb1d52177b4a7d08709ed957f466158d121ae6a6cb75dd0fa21eb",
+    "bundled": false
+  }
+]

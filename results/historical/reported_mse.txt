@@ -1,0 +1,14 @@
+Aspect               | MSE                 
+---------------------------------------------
+review/appearance    | 0.01750
+review/aroma         | 0.01365
+review/palate        | 0.01707
+review/taste         | 0.01292
+review/overall       | 0.01301
+
+eval_mse_appearance: 0.016733968630433083
+eval_mse_aroma: 0.012117328122258186
+eval_mse_palate: 0.015551731921732426
+eval_mse_taste: 0.01065259613096714
+eval_mse_overall: 0.010557320900261402
+

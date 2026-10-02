@@ -1,0 +1,110 @@
+{
+  "source": "ratebeer.json",
+  "sampling": "first N records; source ordering may bias results",
+  "input_records": 20000,
+  "input_records_sha256": "704dbb6a6fe4e82a51a8aee3836f80c96ddbc0f73b4b99a96768fd6b1f3ec85e",
+  "split": "product",
+  "seed": 42,
+  "cleaning": {
+    "invalid": 47,
+    "duplicates": 30,
+    "missing_group": 0
+  },
+  "counts": {
+    "train": 15054,
+    "validation": 1310,
+    "test": 3559
+  },
+  "products": {
+    "train": 630,
+    "validation": 72,
+    "test": 76
+  },
+  "trials": [
+    {
+      "alpha": 0.1,
+      "validation_macro_mse": 0.019984181388574922
+    },
+    {
+      "alpha": 1.0,
+      "validation_macro_mse": 0.019971930479651134
+    },
+    {
+      "alpha": 10.0,
+      "validation_macro_mse": 0.01993834140801435
+    }
+  ],
+  "selected_alpha": 10.0,
+  "dimensions": 128,
+  "test_ridge": {
+    "appearance": {
+      "n": 3559,
+      "mse": 0.019155228574720556,
+      "mae": 0.10903372802875594
+    },
+    "aroma": {
+      "n": 3559,
+      "mse": 0.01387330626261486,
+      "mae": 0.08968319660390371
+    },
+    "palate": {
+      "n": 3559,
+      "mse": 0.02056231999583441,
+      "mae": 0.11517753959705296
+    },
+    "taste": {
+      "n": 3559,
+      "mse": 0.01352576644016842,
+      "mae": 0.0885290454987322
+    },
+    "overall": {
+      "n": 3559,
+      "mse": 0.0136300255960461,
+      "mae": 0.08918601039696168
+    },
+    "macro_mse": 0.01614932937387687
+  },
+  "test_train_mean": {
+    "appearance": {
+      "n": 3559,
+      "mse": 0.021388206045053038,
+      "mae": 0.12411991925070494
+    },
+    "aroma": {
+      "n": 3559,
+      "mse": 0.015276077957479603,
+      "mae": 0.09492645619723293
+    },
+    "palate": {
+      "n": 3559,
+      "mse": 0.023286673726392607,
+      "mae": 0.13218119368941852
+    },
+    "taste": {
+      "n": 3559,
+      "mse": 0.015625183944028613,
+      "mae": 0.09361497074519742
+    },
+    "overall": {
+      "n": 3559,
+      "mse": 0.016422974397105473,
+      "mae": 0.10167897489054392
+    },
+    "macro_mse": 0.018399823214011866
+  },
+  "cluster_bootstrap": {
+    "interval": [
+      -0.0038653034442853655,
+      -0.0014702778118760133
+    ],
+    "samples": 300,
+    "unit": "product cluster",
+    "direction": "negative favors ridge over train-mean baseline"
+  },
+  "runtime_seconds": 4.991737599950284,
+  "environment": {
+    "python": "3.12.14",
+    "numpy": "2.3.5"
+  },
+  "reload_predictions_match": true
+}

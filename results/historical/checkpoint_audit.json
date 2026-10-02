@@ -1,0 +1,10 @@
+{
+  "tensor_count": 24,
+  "head_tensor_keys": [],
+  "modules_to_save": null,
+  "global_step": 12000,
+  "epoch": 0.18238745174332005,
+  "best_metric": null,
+  "finding": "No regression-head tensors found",
+  "note": "Metadata inspection only; no inference or arbitrary pickle loading"
+}
